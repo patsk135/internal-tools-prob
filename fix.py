@@ -1,30 +1,64 @@
-from mocks import *
+def fixAny(original):
+    # print('fixAny()')
+    if(isinstance(original, list)):
+        return [fixAny(i) for i in original]
+    elif(isinstance(original, tuple)):
+        return tuple(fixAny(i) for i in original)
+    elif(isinstance(original, dict)):
+        return fixDict(original)
+    return original
+    # print('End fixAny()')
 
 
-def fixAny(x):
-    if(isinstance(x, list) | isinstance(x, tuple)):
-        for i in x:
-            fixAny(i)
-    elif(isinstance(x, dict)):
-        fixDict(x)
-
-
-def fixDict(x):
-    # print("fixDict()")
+def fixDict(original):
+    # print('fixDict()')
+    item = original.copy()
     check = False
-    for i in x:
-        print(i)
-        if(isinstance(value.get(i), dict)):
-            fixDict(x.get(i))
-        if i is "email":
-            x[i] = "redacted"
-        if i is "password":
+    for k, v in item.items():
+        # print('{0}: {1}'.format(k, v))
+        if k is 'email':
+            item[k] = 'redacted'
+        elif k is 'password':
             check = True
+        elif(isinstance(v, list) | isinstance(v, tuple) | isinstance(v, dict)):
+            item[k] = fixAny(v)
     if check:
-        del x["password"]
+        del item['password']
+    return item
     # print('End fixDict()')
 
 
-fixAny(value)
+value = {
+    "email": "test@example.com",
+    "password": "test",
+    "user_info": {
+        "name": "Test user",
+        "email": {
+            "email": "test@example.com",
+            "password": "test",
+            "user_info": {
+                "name": "Test user",
+                "email": "test@example.com"
+            }
+        },
+        "tuple": (
+            {
+                "email": "cool",
+                "password": "test",
+                "check": "still"
+            }, "bro")
+    },
+    "list": [
+        {
+            "email": "test@example.com",
+            "password": "test",
+            "user_info": {
+                "name": "Test user",
+                "email": "test@example.com"
+            }
+        }]
+}
 
-print(value)
+tofix = (value, value)
+
+print(fixAny(tofix))
